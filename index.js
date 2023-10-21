@@ -25,23 +25,18 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const brandCollection = client.db('brandDB').collection('brand');
     const productCollection = client.db('productDB').collection('product');
     const brandProductCollection = client.db('brandProductDB').collection('brandProduct')
+    const cartCollection = client.db('cartDB').collection('cart')
 
     app.get('/brand', async(req, res) => {
       const cursor = brandCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     })
-
-    // app.get('/product', async(req,res) =>{
-    //   const cursor = brandProductCollection.find();
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // })
 
     app.get('/brandProduct/:brandName', async(req, res) =>{
       const brandName = req.params.brandName;
@@ -62,7 +57,6 @@ async function run() {
     // 
     app.get("/users/:id", async (req, res) => {
       const id = req.params.id;
-      console.log("id", id);
       const query = {_id: new ObjectId(id),};
       const result = await brandProductCollection.findOne(query);
       console.log(result);
@@ -76,22 +70,20 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/users', async(req, res) =>{
-      const newCart = req.body;
-      console.log(newCart);
-      const result = await brandProductCollection.insertOne(newCart)
+    app.post('/cart', async(req, res) =>{
+      const addCart = req.body;
+      console.log(addCart);
+      const result = await cartCollection.insertOne(addCart)
       console.log(result);
       res.send(result);
     })
 
-    
-
-    // app.post('/product', async(req, res) => {
-    //   const productItem = req.body;
-    //   console.log(productItem);
-    //   const result = await productCollection.insertOne(productItem);
-    //   res.send(result);
-    // })
+    app.get('/cart/', async(req, res) =>{
+      const cursor = cartCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+      
+    })
 
     app.get('/brandProduct/:id', async(req, res) =>{
       const id = req.params.id;
@@ -123,15 +115,15 @@ async function run() {
       res.send(result); 
     })
 
-    app.delete('/brandProduct/:id', async(req, res) => {
+    app.delete('/cart/:id', async(req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id)}
-      const result = await brandProductCollection.deleteOne(query);
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     })
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
