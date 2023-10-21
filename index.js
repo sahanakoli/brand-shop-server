@@ -29,6 +29,7 @@ async function run() {
 
     const brandCollection = client.db('brandDB').collection('brand');
     const productCollection = client.db('productDB').collection('product');
+    const brandProductCollection = client.db('brandProductDB').collection('brandProduct')
 
     app.get('/brand', async(req, res) => {
       const cursor = brandCollection.find();
@@ -36,11 +37,37 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/product', async(req,res) =>{
-      const cursor = productCollection.find();
-      const result = await cursor.toArray();
+    // app.get('/product', async(req,res) =>{
+    //   const cursor = brandProductCollection.find();
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // })
+
+    app.get('/brandProduct/:brandName', async(req, res) =>{
+      const brandName = req.params.brandName;
+      console.log('brandName', brandName);
+      const query = {brand_name: brandName};
+      const cursor = brandProductCollection.find(query);
+      const result =  await cursor.toArray();
       res.send(result);
     })
+
+    app.post('/brandProduct', async(req,res) =>{
+      const productItem = req.body;
+      console.log(productItem);
+      const result = await brandProductCollection.insertOne(productItem);
+      res.send(result);
+    })
+
+    // 
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("id", id);
+      const query = {_id: new ObjectId(id),};
+      const result = await brandProductCollection.findOne(query);
+      console.log(result);
+      res.send(result);
+    });
 
     app.post('/brand', async(req, res) => {
       const brandItem = req.body;
@@ -49,17 +76,57 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/product', async(req, res) => {
-      const productItem = req.body;
-      console.log(productItem);
-      const result = await productCollection.insertOne(productItem);
+    app.post('/users', async(req, res) =>{
+      const newCart = req.body;
+      console.log(newCart);
+      const result = await brandProductCollection.insertOne(newCart)
+      console.log(result);
       res.send(result);
     })
 
-    app.delete('/product/:id', async(req, res) => {
+    
+
+    // app.post('/product', async(req, res) => {
+    //   const productItem = req.body;
+    //   console.log(productItem);
+    //   const result = await productCollection.insertOne(productItem);
+    //   res.send(result);
+    // })
+
+    app.get('/brandProduct/:id', async(req, res) =>{
+      const id = req.params.id;
+      console.log(id)
+      const query = {_id: new ObjectId(id)};
+      const result = await brandProductCollection.findOne(query);
+      console.log(result);
+      res.send(result);
+    })
+
+    app.put('/brandProduct/:id', async(req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true};
+      const updatedProduct = req.body;
+      
+      const product = {
+        $set: {
+          name: updatedProduct.name, 
+          brand_name: updatedProduct.brand_name, 
+          type: updatedProduct.type, 
+          price: updatedProduct.price, 
+          rating: updatedProduct.rating, 
+          photo: updatedProduct.photo
+        }
+      }
+
+      const result = await brandProductCollection.updateOne(filter, product, options)
+      res.send(result); 
+    })
+
+    app.delete('/brandProduct/:id', async(req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id)}
-      const result = await productCollection.deleteOne(query);
+      const result = await brandProductCollection.deleteOne(query);
       res.send(result);
     })
 
